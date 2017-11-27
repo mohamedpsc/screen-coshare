@@ -2,8 +2,9 @@ import threading
 import socket
 from image_viewer import ImageViewer
 from PIL import Image, ImageTk
+from scipy.misc import imshow
 
-INTERVAL = 1000
+INTERVAL = 300
 
 
 class Client(object):
@@ -33,15 +34,25 @@ class Client(object):
     # Receive stream from Server
     def receive(self):
         size = 3 * self.shape[0] * self.shape[1]
+        wait = False
+        temp = None
         while self.running:
             try:
                 # receive file
                 file = self.my_socket.recv(size)
-                print(len(file))
-                if len(file) == size:
+                if len(file) < size:
+                    if temp is None:
+                        temp = file
+                    else:
+                        temp += file
+                    print(len(temp))
+                    if len(temp) == size:
+                        self.image_viewer.add_frame(ImageTk.PhotoImage(Image.frombytes('RGB', (800, 800), temp)))
+                        temp = None
+                else:
                     self.image_viewer.add_frame(ImageTk.PhotoImage(Image.frombytes('RGB', (800, 800), file)))
-                    print('received')
-
+                    # print('received')
+                    # imshow(Image.frombytes('RGB', (800, 800), file))
             except socket.error as msg:
                 print('EXCEPTION ' + msg)
 

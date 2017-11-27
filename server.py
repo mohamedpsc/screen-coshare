@@ -36,7 +36,7 @@ class Server():
         # Sending screenshots
         while self.running:
             self.send_image()
-            time.sleep(1)
+            time.sleep(0.3)
 
     def send_image(self):
         screen_shot = self.get_screen()
