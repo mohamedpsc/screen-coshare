@@ -2,7 +2,8 @@ import socket
 import threading
 import time
 import pyscreenshot as ImageGrab
-
+import pyautogui 
+import pickle
 IMAGE_SIZE = 800, 800
 PORT_NUMBER = 5555
 
@@ -13,6 +14,7 @@ class Server():
         self.socket = None
         self.client_socket = None
         self.client_address = None
+
 
     @staticmethod
     def get_screen():
@@ -35,13 +37,23 @@ class Server():
         self.client_socket.send(str(IMAGE_SIZE).encode())
         # Sending screenshots
         while self.running:
-            self.send_image()
+            self.send_control()
             time.sleep(0.3)
 
-    def send_image(self):
+    def send_control(self):
         screen_shot = self.get_screen()
-        self.client_socket.sendall(screen_shot)
+        mouse_control = pyautogui.position()
+        self.socket.sendall(
+        pickle.dumps(
+            (
+                screen_shot,
+                mouse_control
+            )
+        )
+        )
 
+    def send_mount(self):
+        self.client_socket.send
     def receive(self):
         """
         Receive commands from client

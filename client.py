@@ -3,14 +3,16 @@ import socket
 from image_viewer import ImageViewer
 from PIL import Image, ImageTk
 from scipy.misc import imshow
-
-INTERVAL = 300
+from sys import argv
+import pyautogui 
+import pickle 
+INTERVAL = 50
 
 
 class Client(object):
     def __init__(self):
         self.running = True
-        self.server_host = '127.0.1.1'
+        self.server_host = argv[1]
         self.my_socket = None
         self.image_viewer = ImageViewer(interval=INTERVAL)
         self.shape = None
@@ -26,7 +28,7 @@ class Client(object):
         print(self.shape)
         # Receiving Messages from Server on separate thread
         threading.Thread(target=self.receive).start()
-        # run stream_viewer
+        # run stream_viewer3
         # stream viewer should run in the main thread.
         self.image_viewer.next()
         self.image_viewer.slide_show()
@@ -45,12 +47,16 @@ class Client(object):
                         temp = file
                     else:
                         temp += file
-                    print(len(temp))
+                    # print(len(temp))
                     if len(temp) == size:
-                        self.image_viewer.add_frame(ImageTk.PhotoImage(Image.frombytes('RGB', (800, 800), temp)))
+                        data = pickle.loads(temp)
+                        self.image_viewer.add_frame(ImageTk.PhotoImage(Image.frombytes('RGB', self.shape, data[0])))
+                        pyautogui.moveTo(data[1])
                         temp = None
                 else:
-                    self.image_viewer.add_frame(ImageTk.PhotoImage(Image.frombytes('RGB', (800, 800), file)))
+                    data = pickle.loads(file)
+                    self.image_viewer.add_frame(ImageTk.PhotoImage(Image.frombytes('RGB', self.shape, data[0])))
+                    pyautogui.moveTo(data[1])
                     # print('received')
                     # imshow(Image.frombytes('RGB', (800, 800), file))
             except socket.error as msg:
