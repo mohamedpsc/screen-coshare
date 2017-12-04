@@ -34,7 +34,12 @@ class Server():
         # Receiving clients commands on separate thread
         threading.Thread(target=self.receive).start()
         # sending screen shot dimension
-        self.client_socket.send(str(IMAGE_SIZE).encode())
+        self.client_socket.send(
+            pickle.dumps(
+                IMAGE_SIZE,
+                len(pyautogui.position())
+            )
+        )
         # Sending screenshots
         while self.running:
             self.send_control()

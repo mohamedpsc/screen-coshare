@@ -24,7 +24,8 @@ class Client(object):
         # Bind the Socket to server host and same port number
         self.my_socket.connect((self.server_host, 5555))
         # receive image shape
-        self.shape = [int(i) for i in self.my_socket.recv(10).decode()[1:-1].split(',')]
+        self.shape = pickle.loads(self.my_socket.recv())
+        
         print(self.shape)
         # Receiving Messages from Server on separate thread
         threading.Thread(target=self.receive).start()
@@ -35,7 +36,8 @@ class Client(object):
 
     # Receive stream from Server
     def receive(self):
-        size = 3 * self.shape[0] * self.shape[1]
+        size = (3 * self.shape[0] * self.shape[1] )+ self.shape[2]
+        self.shape = self.shape[:1]
         wait = False
         temp = None
         while self.running:
