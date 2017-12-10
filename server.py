@@ -2,12 +2,14 @@ import socket
 import threading
 import time
 import pyscreenshot as ImageGrab
+from ast import literal_eval as make_tuple
+import pyautogui as mouse
 
 IMAGE_SIZE = 800, 800
 PORT_NUMBER = 5555
 
 
-class Server():
+class Server:
     def __init__(self):
         self.running = True
         self.socket = None
@@ -36,7 +38,7 @@ class Server():
         # Sending screenshots
         while self.running:
             self.send_image()
-            time.sleep(0.3)
+            time.sleep(0.2)
 
     def send_image(self):
         screen_shot = self.get_screen()
@@ -47,7 +49,9 @@ class Server():
         Receive commands from client
         """
         while self.running:
-            pass
+            x = self.client_socket.recv(1024).decode()
+            pos = make_tuple(x)
+            mouse.moveTo(pos[0], pos[1])
 
     def kill(self):
         """

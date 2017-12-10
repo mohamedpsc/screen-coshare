@@ -2,13 +2,15 @@ import threading
 import socket
 from image_viewer import ImageViewer
 from PIL import Image, ImageTk
-from scipy.misc import imshow
+import pyautogui as mouse
 
 INTERVAL = 300
+PORT_NUMBER = 5555
 
 
 class Client(object):
     def __init__(self):
+        self.running = True
         self.running = True
         self.server_host = '127.0.1.1'
         self.my_socket = None
@@ -20,7 +22,7 @@ class Client(object):
         # Create Client socket
         self.my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Bind the Socket to server host and same port number
-        self.my_socket.connect((self.server_host, 5555))
+        self.my_socket.connect((self.server_host, PORT_NUMBER))
         # receive image shape
         self.shape = [int(i) for i in self.my_socket.recv(10).decode()[1:-1].split(',')]
         print(self.shape)
@@ -34,7 +36,6 @@ class Client(object):
     # Receive stream from Server
     def receive(self):
         size = 3 * self.shape[0] * self.shape[1]
-        wait = False
         temp = None
         while self.running:
             try:
@@ -45,16 +46,20 @@ class Client(object):
                         temp = file
                     else:
                         temp += file
-                    print(len(temp))
+                    # print(len(temp))
                     if len(temp) == size:
+                        self.send_mouse()
                         self.image_viewer.add_frame(ImageTk.PhotoImage(Image.frombytes('RGB', (800, 800), temp)))
                         temp = None
                 else:
                     self.image_viewer.add_frame(ImageTk.PhotoImage(Image.frombytes('RGB', (800, 800), file)))
-                    # print('received')
-                    # imshow(Image.frombytes('RGB', (800, 800), file))
+                    self.send_mouse()
             except socket.error as msg:
-                print('EXCEPTION ' + msg)
+                print('EXCEPTION ' + str(msg))
+
+    def send_mouse(self):
+        mouse_control = mouse.position()
+        self.my_socket.send(str(mouse_control).encode())
 
     # Ending stream
     def kill(self):
